@@ -1,6 +1,5 @@
 import streamlit as st
 import pandas as pd
-import matplotlib.pyplot as plt
 
 # --------------------------------------------------
 # PAGE CONFIG
@@ -11,7 +10,7 @@ st.set_page_config(
 )
 
 st.title("🏙 Hyderabad Real Estate Buyer Dashboard")
-st.markdown("Buyer-focused real estate insights (data embedded in code)")
+st.markdown("Buyer‑focused real estate insights (data embedded in code)")
 
 # --------------------------------------------------
 # EMBEDDED DATA
@@ -89,7 +88,7 @@ budget = st.sidebar.slider(
 )
 
 # --------------------------------------------------
-# ✅ FILTER DATA (ERROR FIXED HERE)
+# FILTER DATA (✅ SAFE & FIXED)
 # --------------------------------------------------
 filtered_df = df[
     (df["Locality"].isin(locality)) &
@@ -98,7 +97,6 @@ filtered_df = df[
     (df["Estimated Sale Price"].between(budget[0], budget[1]))
 ]
 
-# Safety check
 if filtered_df.empty:
     st.warning("No properties match the selected filters.")
     st.stop()
@@ -108,45 +106,33 @@ if filtered_df.empty:
 # --------------------------------------------------
 st.subheader("📊 Key Buyer Metrics")
 
-col1, col2, col3, col4 = st.columns(4)
+c1, c2, c3, c4 = st.columns(4)
 
-col1.metric("Total Properties", len(filtered_df))
-col2.metric("Avg Price / Sqft", f"₹ {int(filtered_df['Price per Sqft'].mean())}")
-col3.metric("Avg Sale Price", f"₹ {int(filtered_df['Estimated Sale Price'].mean()):,}")
-col4.metric("Avg Rental Yield", f"{filtered_df['Rental Yield (%)'].mean():.2f}%")
+c1.metric("Total Properties", len(filtered_df))
+c2.metric("Avg Price / Sqft", f"₹ {int(filtered_df['Price per Sqft'].mean())}")
+c3.metric("Avg Sale Price", f"₹ {int(filtered_df['Estimated Sale Price'].mean()):,}")
+c4.metric("Avg Rental Yield", f"{filtered_df['Rental Yield (%)'].mean():.2f}%")
 
 # --------------------------------------------------
-# CHART 1: AVG PRICE BY LOCALITY
+# NATIVE STREAMLIT CHARTS (NO LIBRARIES)
 # --------------------------------------------------
 st.subheader("📈 Average Sale Price by Locality")
 
-avg_price = (
+price_by_locality = (
     filtered_df
     .groupby("Locality")["Estimated Sale Price"]
     .mean()
-    .sort_values()
 )
 
-fig1, ax1 = plt.subplots()
-avg_price.plot(kind="bar", ax=ax1)
-ax1.set_xlabel("Locality")
-ax1.set_ylabel("Average Sale Price (INR)")
-plt.xticks(rotation=45)
-st.pyplot(fig1)
+st.bar_chart(price_by_locality)
 
-# --------------------------------------------------
-# CHART 2: AREA VS PRICE
-# --------------------------------------------------
-st.subheader("📐 Built-up Area vs Estimated Price")
+st.subheader("📐 Built‑up Area vs Sale Price")
 
-fig2, ax2 = plt.subplots()
-ax2.scatter(
-    filtered_df["Built-up Area (sqft)"],
-    filtered_df["Estimated Sale Price"]
-)
-ax2.set_xlabel("Built-up Area (sqft)")
-ax2.set_ylabel("Estimated Sale Price (INR)")
-st.pyplot(fig2)
+area_price_df = filtered_df[
+    ["Built-up Area (sqft)", "Estimated Sale Price"]
+].set_index("Built-up Area (sqft)")
+
+st.line_chart(area_price_df)
 
 # --------------------------------------------------
 # DATA TABLE
